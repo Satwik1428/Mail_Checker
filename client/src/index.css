@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night-ink: #0c1713;
+  --color-ledger-green: #182720;
+  --color-deep-forest: #22352a;
+  --color-aged-ivory: #e8dcc3;
+  --color-soft-parchment: #f4eddf;
+  --color-antique-brass: #d4ad63;
+  --color-oxidized-sage: #a5b99a;
+  --color-muted-vermilion: #c97862;
+  --color-success-green: #42b88a;
+  --color-secondary-text: #a9b2a8;
+  --color-ledger-border: #344139;
+}
+
+:root {
+  font-family: "Geist Variable", "Segoe UI", sans-serif;
+  color: #f4eddf;
+  background: #0c1713;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 0; min-height: 100vh; }
+button, textarea { font: inherit; }
+button:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid #d4ad63; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
