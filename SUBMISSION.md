@@ -4,48 +4,48 @@
 
 - Website: https://mailchecker-pi.vercel.app/
 - API health: https://mailsure-api.onrender.com/api/health
-- GitHub: https://github.com/Satwik1428/Mail_Checker
+- GitHub source: https://github.com/Satwik1428/Mail_Checker
 
 ## Summary
 
-MailSure is a small web application for checking email syntax and domain mail-routing records for a pasted list. It helps identify invalid syntax and domains with no published mail route, while clearly marking inconclusive DNS results as Unknown.
+MailSure checks email syntax and domain-level DNS mail routing for a pasted list. It identifies malformed addresses and domains without a mail route, while marking a found route as Unknown until the individual mailbox can be verified. The application does not send email or probe SMTP mailboxes.
 
 ## Features
 
-- Batch input with duplicate removal and a 50-address limit.
-- Syntax checks and DNS MX lookups, with A/AAAA fallback when the MX record set is absent.
-- Three result categories: Likely Deliverable, Likely to Bounce, and Unknown.
-- Result explanations, summary stamps, search and filters, and CSV export.
+- Batch input with case-insensitive duplicate removal and a 50-address limit.
+- Syntax checks, DNS MX checks, and implicit A/AAAA fallback when no MX record set exists.
+- Three result categories: Likely Deliverable, Likely to Bounce, and Unknown. DNS evidence alone does not produce Likely Deliverable.
+- Per-address explanations, summary stamps, search, filters, and CSV export.
 - Last input and results restored after reload using browser local storage.
-- Responsive React/Vite frontend and Express API.
-- No email sending or SMTP mailbox probing.
+- React/Vite frontend and Express API.
 
-## Verification performed
+## Final verification
 
-- Live frontend opened successfully at the production Vercel domain (HTTP 200).
-- Live API health endpoint returned status ok.
-- Submitted the requested three-address list through the production UI; the check completed without a frontend error and returned one result in each category:
-  - alice@gmail.com — Likely Deliverable; five MX records found.
+- Live Vercel page returned HTTP 200 with the MailSure page title.
+- Live Render health endpoint returned status ok.
+- Live CORS preflight returned HTTP 204 and allowed https://mailchecker-pi.vercel.app.
+- After deploying backend commit 5f68380, I reran the three-address list through the live UI. Analysis completed with 3 results: 0 Likely Deliverable, 1 Likely to Bounce, and 2 Unknown.
+  - alice@gmail.com — Unknown; five MX records found, but the individual mailbox was not verified.
   - not-an-email — Likely to Bounce; invalid syntax.
   - test@nonexistent-domain-987654321.example — Unknown; DNS returned ENOTFOUND.
-- The live ledger showed 3 total results and the expected per-category counts. This confirms the Vercel frontend can call the Render API and the production CORS setting permits the request.
-- Clicking Export CSV opened the browser's Save dialog with a CSV filename. A saved file was not inspected because the Save dialog did not accept automation input.
-- Frontend automated tests: 9 passed, 0 failed.
-- Backend automated tests: 5 passed, 0 failed.
-- Frontend lint: passed.
-- Frontend production build: passed.
-- Secret-hygiene check: no tracked .env or credential-named files found. A pattern scan of the available Git history found no common API-key or private-key signatures; this is a best-effort scan, not a guarantee that every possible secret format is absent.
+- A direct DNS-only API check of asdkjh38492@gmail.com also returned Unknown because DNS cannot verify an individual mailbox. No SMTP connections or emails were sent.
+- Export CSV opened the browser's Save dialog. The CSV was not saved or inspected as a file.
+- Frontend automated tests: 9 passed, 0 failed. Backend automated tests: 5 passed, 0 failed. Frontend lint and production build passed.
+- A best-effort scan found no tracked .env/credential-named files and no common API-key or private-key signatures in the available Git history.
+- The front-end source files compared match between the Vercel-connected copy and the submitted source. Render deploys the backend from the submitted Mail_Checker repository at commit 5f68380. Vercel's repository copy has a separate commit history.
 
 ## Honest limitations
 
-Likely Deliverable means only that valid-looking syntax has a domain-level DNS mail route. It does not establish that an individual mailbox exists, accepts mail, or receives a message in its inbox. Resolver timeouts/failures are Unknown. Results can differ as DNS changes. The service never sends messages or probes SMTP.
+A valid address with an MX or fallback route is Unknown because MailSure does not verify the individual mailbox. Invalid syntax or a confirmed absence of DNS mail-routing records is Likely to Bounce. Resolver failures and timeouts are Unknown. DNS data can change. No result guarantees inbox delivery.
 
-The API host must permit outbound DNS lookups. If deployment networking blocks them, MailSure cannot determine mail routing and reports an inconclusive result as Unknown. The Render free service can also have a cold start after inactivity.
+MailSure does not implement SMTP checks. Render's current Free service policy blocks outbound SMTP ports 25, 465, and 587, and port 25 is blocked on all Render services. See [Render Free instance limitations](https://render.com/docs/free). The API also needs outbound DNS access. The Render Free service may sleep while idle and have a cold-start delay.
+
+The browser stores the last input and results in local storage on that device. The README includes the actual product artwork; I did not include the older reference image as an application screenshot because its fixed example counts could be mistaken for real results.
 
 ## Production configuration
 
-- Vercel project: mail_checker_, connected to the copied GitHub repository Satwik1428/mail_checker_. Production domain: mailchecker-pi.vercel.app.
-- Render API service: mailsure-api.onrender.com.
-- The Vercel build must use VITE_API_URL=https://mailsure-api.onrender.com.
-- Render must allow CLIENT_URL=https://mailchecker-pi.vercel.app.
-- Keep the original source repository and Vercel's copied repository in sync if continuing development; the production project currently deploys from the copied mail_checker_ repository.
+- Vercel project: mail_checker_, production domain mailchecker-pi.vercel.app.
+- Render API: mailsure-api.onrender.com, deployed from the original Mail_Checker repository.
+- Vercel production VITE_API_URL: https://mailsure-api.onrender.com.
+- Render CLIENT_URL: https://mailchecker-pi.vercel.app.
+- The Vercel-connected repository is a copy. The frontend source files match the submitted repo; future frontend changes must be synchronized or Vercel must be reconnected to the original repository.
