@@ -32,7 +32,7 @@ The live interface uses three stamp artworks in its results ledger. The envelope
 ## Architecture
 
 - **client/** — React 19 and Vite single-page application. Axios sends checks to the API. The UI helpers parse/deduplicate input, summarize results, escape CSV cells, and restore the last check from local storage.
-- **server/** — Express API. The check route validates request data, limits batch size and concurrency, and checks syntax and DNS/MX routing. Helmet, CORS, JSON-size limits, and rate limits protect the API.
+- **server/** — Express API. The check route validates request data, limits batch size and concurrency, and checks syntax and DNS/MX routing. Helmet, CORS, JSON-size limits, and rate limits protect the API; the health endpoint is excluded from API throttling so host probes stay available.
 
 ### API contract
 

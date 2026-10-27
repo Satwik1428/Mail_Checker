@@ -30,9 +30,10 @@ MailSure checks email syntax and domain-level DNS mail routing for a pasted list
   - test@nonexistent-domain-987654321.example — Unknown; DNS returned ENOTFOUND.
 - A direct DNS-only API check of asdkjh38492@gmail.com also returned Unknown because DNS cannot verify an individual mailbox. No SMTP connections or emails were sent.
 - Export CSV opened the browser's Save dialog. The CSV was not saved or inspected as a file.
-- Frontend automated tests: 9 passed, 0 failed. Backend automated tests: 5 passed, 0 failed. Frontend lint and production build passed.
+- Frontend automated tests: 9 passed, 0 failed. Backend automated tests: 6 passed, 0 failed. Frontend lint and production build passed.
+- Health-rate-limit regression: 105 of 105 live GET requests returned HTTP 200, with no 429 responses; the final health response was status ok. Backend fix deployed at commit f3c735f.
 - A best-effort scan found no tracked .env/credential-named files and no common API-key or private-key signatures in the available Git history.
-- The front-end source files compared match between the Vercel-connected copy and the submitted source. Render deploys the backend from the submitted Mail_Checker repository at commit 5f68380. Vercel's repository copy has a separate commit history.
+- The front-end source files compared match between the Vercel-connected copy and the submitted source. Render deploys the backend from the submitted Mail_Checker repository; the current health-check fix is live at commit f3c735f. Vercel's repository copy has a separate commit history.
 
 ## Honest limitations
 
