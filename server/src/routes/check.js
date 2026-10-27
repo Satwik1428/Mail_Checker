@@ -54,8 +54,10 @@ async function lookupMx(domain, resolver) {
     }
   } catch (error) {
     const code = dnsErrorCode(error);
-    if (code !== "ENODATA" && code !== "ENOTFOUND") return { status: "error", code };
-    if (code === "ENOTFOUND") return { status: "none", code };
+    // ENODATA means this RRset is absent, so RFC 5321 implicit-MX fallback applies.
+    // ENOTFOUND can also reflect resolver/network conditions, so do not call it
+    // proof that the domain has no route; surface it as Unknown instead.
+    if (code !== "ENODATA") return { status: "error", code };
     // RFC 5321 implicit MX: when no MX RRset exists, use the domain's address record.
   }
 
@@ -68,7 +70,7 @@ async function lookupMx(domain, resolver) {
       }
     } catch (error) {
       const code = dnsErrorCode(error);
-      if (code === "ENODATA" || code === "ENOTFOUND") continue;
+      if (code === "ENODATA") continue;
       return { status: "error", code };
     }
   }

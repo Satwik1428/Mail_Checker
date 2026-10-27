@@ -80,3 +80,5 @@ Frontend tests cover address parsing and deduplication, result summaries, and CS
 - Set VITE_API_URL at frontend build time to the deployed API URL.
 - Configure frontend and backend batch limits consistently.
 - Deploy client/ as a static Vite site and server/ as a Node.js service.
+- The deployed API host must allow outbound DNS lookups for MX and A/AAAA records. If its network policy blocks DNS, MailSure cannot determine domain mail routing and reports the affected valid addresses as **Unknown** when the lookup times out or returns an inconclusive resolver error. It does not work around that restriction by connecting to mail servers, probing mailboxes, or sending messages.
+- When DNS is available, results still describe only the domain's published mail-routing records. **Likely Deliverable** does not mean a specific mailbox exists or that a message will reach the inbox; MailSure cannot verify either fact.

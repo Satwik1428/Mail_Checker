@@ -16,6 +16,7 @@ function fixtureResolver() {
       if (domain === "mx.example") return [{ exchange: "mx2.example", priority: 20 }, { exchange: "mx1.example", priority: 10 }];
       if (domain === "fallback.example") throw codedError("ENODATA");
       if (domain === "dns-error.example") throw codedError("EAI_AGAIN");
+      if (domain === "dns-not-found.example") throw codedError("ENOTFOUND");
       if (domain === "timeout.example") throw codedError("ETIMEOUT");
       throw codedError("ENODATA");
     },
@@ -59,8 +60,8 @@ test("no MX uses implicit A/AAAA fallback and no routing records means Likely to
   assert.match(none.explanation, /no MX or fallback A\/AAAA/);
 });
 
-test("DNS failures and timeouts produce Unknown", async () => {
-  for (const domain of ["dns-error.example", "timeout.example"]) {
+test("DNS failures, ambiguous ENOTFOUND responses, and timeouts produce Unknown", async () => {
+  for (const domain of ["dns-error.example", "dns-not-found.example", "timeout.example"]) {
     const result = await checkEmail(`person@${domain}`, fixtureResolver());
     assert.equal(result.classification, "Unknown");
   }
