@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import {
   ArrowDownToLine,
@@ -15,6 +15,7 @@ import {
 import Loader from './components/kokonutui/loader.jsx'
 import ParticleButton from './components/kokonutui/particle-button.jsx'
 import { buildCsvContent, displayCheck, mailboxLabel, parseAddresses, routeLabel, summarizeResults } from './lib/check-utils.js'
+import { readSavedCheck, writeSavedCheck } from './lib/persistence.js'
 import './App.css'
 
 const configuredLimit = Number(import.meta.env.VITE_MAX_EMAILS)
@@ -81,14 +82,19 @@ function EmptyLedger() {
 
 function App() {
   const formRef = useRef(null)
-  const [addressText, setAddressText] = useState('')
-  const [results, setResults] = useState(null)
+  const [savedCheck] = useState(readSavedCheck)
+  const [addressText, setAddressText] = useState(savedCheck.addressText)
+  const [results, setResults] = useState(savedCheck.results)
   const [isLoading, setIsLoading] = useState(false)
   const [requestStatus, setRequestStatus] = useState('idle')
   const [error, setError] = useState('')
   const [sampleLoaded, setSampleLoaded] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    writeSavedCheck(addressText, results)
+  }, [addressText, results])
 
   const { addresses, duplicatesRemoved } = useMemo(() => parseAddresses(addressText), [addressText])
   const canSubmit = addresses.length > 0 && addresses.length <= MAX_EMAILS && !isLoading
