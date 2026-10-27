@@ -67,6 +67,15 @@ test("DNS failures, ambiguous ENOTFOUND responses, and timeouts produce Unknown"
   }
 });
 
+test("health endpoint remains available after the general API request limit", async () => {
+  await withApi(async (base) => {
+    const statuses = await Promise.all(Array.from({ length: 105 }, async () => {
+      const response = await fetch(`${base}/api/health`);
+      return response.status;
+    }));
+    assert.equal(statuses.every((status) => status === 200), true);
+  });
+});
 test("health and check endpoints handle outcomes and malformed requests", async () => {
   await withApi(async (base) => {
     const health = await fetch(`${base}/api/health`);
