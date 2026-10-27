@@ -44,16 +44,16 @@ async function withApi(run) {
   assert.equal(isValidEmail("@example.com"), false);
 });
 
-test("MX lookup returns Likely Deliverable without claiming mailbox existence", async () => {
+test("MX lookup reports Unknown because DNS does not verify the individual mailbox", async () => {
   const result = await checkEmail("person@mx.example", fixtureResolver());
-  assert.equal(result.classification, "Likely Deliverable");
-  assert.match(result.explanation, /does not confirm the individual mailbox exists/);
+  assert.equal(result.classification, "Unknown");
+  assert.match(result.explanation, /individual mailbox was not verified/);
   assert.equal(result.checks.mx, true);
 });
 
 test("no MX uses implicit A/AAAA fallback and no routing records means Likely to Bounce", async () => {
   const fallback = await checkEmail("person@fallback.example", fixtureResolver());
-  assert.equal(fallback.classification, "Likely Deliverable");
+  assert.equal(fallback.classification, "Unknown");
   assert.equal(fallback.checks.addressFallback, true);
   const none = await checkEmail("person@no-route.example", fixtureResolver());
   assert.equal(none.classification, "Likely to Bounce");
@@ -87,7 +87,7 @@ test("health and check endpoints handle outcomes and malformed requests", async 
     assert.equal(good.status, 200);
     const payload = await good.json();
     assert.equal(payload.count, 3);
-    assert.deepEqual(payload.results.map((row) => row.classification), ["Likely Deliverable", "Likely to Bounce", "Unknown"]);
+    assert.deepEqual(payload.results.map((row) => row.classification), ["Unknown", "Likely to Bounce", "Unknown"]);
 
     const malformed = await fetch(`${base}/api/check`, {
       method: "POST", headers: { "content-type": "application/json" }, body: "{not json",

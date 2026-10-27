@@ -104,8 +104,8 @@ async function checkEmail(email, resolver) {
     : `an implicit mail route using ${routing.source} address records`;
   return result(
     email,
-    CLASSIFICATION.deliverable,
-    `The domain publishes ${routeDescription}. DNS does not confirm the individual mailbox exists or guarantee inbox delivery.`,
+    CLASSIFICATION.unknown,
+    `The domain publishes ${routeDescription}, but the individual mailbox was not verified.`,
     checks
   );
 }

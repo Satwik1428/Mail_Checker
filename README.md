@@ -20,9 +20,9 @@ The live interface uses three stamp artworks in its results ledger. The envelope
 - Checks common email syntax and queries DNS for MX records.
 - Applies the implicit-MX A/AAAA fallback when the MX record set is absent.
 - Reports three honest classifications:
-  - **Likely Deliverable** — syntax is valid and MX or fallback address records indicate a route.
+  - **Likely Deliverable** — not issued by this DNS-only implementation; it has no mailbox-specific evidence.
   - **Likely to Bounce** — syntax is invalid or DNS confirms there is no MX or fallback route.
-  - **Unknown** — DNS could not provide a reliable answer, including resolver failures and timeouts.
+  - **Unknown** — a domain has DNS mail-routing records but the individual mailbox is not verified, or DNS is inconclusive because of resolver failures or timeouts.
 - Explains each result and shows mailbox status as not checked.
 - Shows summary stamps, searchable/filterable results, and CSV export.
 - Restores the last input and results from browser local storage after reload. This is browser-local persistence, not a server account or cloud backup.
@@ -105,6 +105,7 @@ The frontend tests cover address parsing/deduplication, summaries, safe CSV gene
 - Configure Vercel's production VITE_API_URL as https://mailsure-api.onrender.com and rebuild after changing it.
 - Configure Render's CLIENT_URL as https://mailchecker-pi.vercel.app so browser requests from the production site pass CORS.
 - The API host needs outbound DNS access for MX and A/AAAA lookups. If DNS is blocked or inconclusive, valid addresses are reported as Unknown. Render free services may sleep while idle and have a cold-start delay.
+- MailSure does not attempt SMTP mailbox probing. Render currently blocks outbound ports 25, 465, and 587 for Free services, and blocks port 25 for all services. The deployed checker is syntax and DNS only; see [Render Free instance limitations](https://render.com/docs/free).
 - Browser local storage may contain the last pasted list and results on that device. Clear the app's saved data or browser site data when appropriate; do not use this demo as a mailbox-verification service.
 
 ## Security and privacy notes
