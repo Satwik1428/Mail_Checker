@@ -1,84 +1,112 @@
-# MailSure
+# MailSure — The Night Post Office
 
-MailSure checks email address syntax and the domain's mail-routing DNS records. It does not send email, probe SMTP mailboxes, confirm that a recipient mailbox exists, or guarantee inbox delivery.
+MailSure checks email syntax and a domain's published mail-routing records before you send a list. It does not send email or probe SMTP servers. A DNS route is only a signal about the domain; it cannot confirm that a specific mailbox exists or that a message will reach the inbox.
 
-## Project structure
+## Live project
 
-- client/ — React, Vite, and Tailwind CSS frontend.
-- server/ — Express API with DNS/MX checking.
-- client/public/images/stamps/ — the three summary-stamp artworks used by the results ledger.
+- **Website:** https://mailchecker-pi.vercel.app/
+- **API health:** https://mailsure-api.onrender.com/api/health
+- **Source repository:** https://github.com/Satwik1428/Mail_Checker
 
-## Local development
+## Product artwork
 
-Use two terminals from the repository root.
+![MailSure envelope artwork](client/public/images/mailsure-envelope-ensemble.png)
 
-Terminal 1 — API:
+The live interface uses three stamp artworks in its results ledger. The envelope image above is product artwork, not a screenshot of the application.
+
+## What it does
+
+- Accepts up to 50 unique addresses per check. Lines, commas, semicolons, and whitespace separate entries; duplicates are removed without regard to letter case.
+- Checks common email syntax and queries DNS for MX records.
+- Applies the implicit-MX A/AAAA fallback when the MX record set is absent.
+- Reports three honest classifications:
+  - **Likely Deliverable** — syntax is valid and MX or fallback address records indicate a route.
+  - **Likely to Bounce** — syntax is invalid or DNS confirms there is no MX or fallback route.
+  - **Unknown** — DNS could not provide a reliable answer, including resolver failures and timeouts.
+- Explains each result and shows mailbox status as not checked.
+- Shows summary stamps, searchable/filterable results, and CSV export.
+- Restores the last input and results from browser local storage after reload. This is browser-local persistence, not a server account or cloud backup.
+
+**Important:** MailSure does not establish that an address is active. It does not send test messages, connect to mail servers, or guarantee delivery.
+
+## Architecture
+
+- **client/** — React 19 and Vite single-page application. Axios sends checks to the API. The UI helpers parse/deduplicate input, summarize results, escape CSV cells, and restore the last check from local storage.
+- **server/** — Express API. The check route validates request data, limits batch size and concurrency, and checks syntax and DNS/MX routing. Helmet, CORS, JSON-size limits, and rate limits protect the API.
+
+### API contract
+
+Health check:
+
+    GET /api/health
+
+Email check:
+
+    POST /api/check
+    Content-Type: application/json
+    { "emails": ["person@example.com", "not-an-email"] }
+
+The response has a count and one result per unique input. Each result includes email, classification, explanation, and checks for syntax, MX, address fallback, and mailbox status. Mailbox status remains not_checked.
+
+## Run locally
+
+Use Node.js and npm. Install and start each app in a separate terminal from the repository root.
+
+API terminal:
 
     cd server
     npm install
     npm run dev
 
-Terminal 2 — frontend:
+Frontend terminal:
 
     cd client
     npm install
     npm run dev
 
-By default, Vite serves the frontend at http://localhost:5173 and the API at http://localhost:5000.
+The frontend runs at http://localhost:5173 and the API defaults to http://localhost:5000.
 
-### Optional environment settings
+### Environment settings
 
-Create server/.env when you need to override:
+The defaults work for local development. For a non-default deployment, configure:
 
-    PORT=5000
-    CLIENT_URL=http://localhost:5173
-    MAX_EMAILS=50
-    DNS_TIMEOUT_MS=4000
-    CHECK_CONCURRENCY=5
+| Variable | Used by | Purpose | Default |
+| --- | --- | --- | --- |
+| PORT | server | HTTP port | 5000 |
+| CLIENT_URL | server | Allowed browser origin for CORS | http://localhost:5173 |
+| MAX_EMAILS | server | Maximum unique addresses per request | 50 |
+| DNS_TIMEOUT_MS | server | DNS resolver timeout | 4000 ms |
+| CHECK_CONCURRENCY | server | Parallel DNS checks | 5 |
+| VITE_API_URL | client build | API base URL | http://localhost:5000 |
+| VITE_MAX_EMAILS | client build | UI batch limit; keep aligned with MAX_EMAILS | 50 |
 
-Create client/.env when the API runs elsewhere:
+Put local-only values in server/.env or client/.env. Those files are ignored by Git. VITE_ values are compiled into the public frontend bundle and must never contain secrets.
 
-    VITE_API_URL=http://localhost:5000
-    VITE_MAX_EMAILS=50
+## Test and build
 
-Keep VITE_MAX_EMAILS aligned with the server's MAX_EMAILS.
-
-## API
-
-- GET /api/health — reports whether the API is running.
-- POST /api/check — accepts a JSON object with an emails array and returns count and results.
-
-Each result includes a classification, explanation, and checks for syntax, MX, address-record fallback, and mailbox status. Mailbox status is not checked.
-
-Classifications:
-
-- **Likely Deliverable** — the address syntax is valid and its domain has MX or implicit A/AAAA mail routing.
-- **Likely to Bounce** — syntax is invalid or the domain has no mail-routing records.
-- **Unknown** — DNS did not provide a reliable answer.
-
-These are domain-routing indicators, not mailbox verification.
-
-## Checks
-
-Run frontend unit tests, lint, and a production build:
+Frontend:
 
     cd client
     npm test
     npm run lint
     npm run build
 
-Run backend tests:
+Backend:
 
     cd server
     npm test
 
-Frontend tests cover address parsing and deduplication, result summaries, and CSV output escaping. Backend tests cover syntax, MX/fallback behavior, DNS errors/timeouts, and API request validation.
+The frontend tests cover address parsing/deduplication, summaries, safe CSV generation, and saved state. Backend tests cover syntax, MX and A/AAAA fallback, resolver errors/timeouts, batch handling, and malformed requests.
 
-## Deployment notes
+## Deployment configuration and limits
 
-- Set CLIENT_URL on the API to the deployed frontend origin.
-- Set VITE_API_URL at frontend build time to the deployed API URL.
-- Configure frontend and backend batch limits consistently.
-- Deploy client/ as a static Vite site and server/ as a Node.js service.
-- The deployed API host must allow outbound DNS lookups for MX and A/AAAA records. If its network policy blocks DNS, MailSure cannot determine domain mail routing and reports the affected valid addresses as **Unknown** when the lookup times out or returns an inconclusive resolver error. It does not work around that restriction by connecting to mail servers, probing mailboxes, or sending messages.
-- When DNS is available, results still describe only the domain's published mail-routing records. **Likely Deliverable** does not mean a specific mailbox exists or that a message will reach the inbox; MailSure cannot verify either fact.
+- Frontend is served by Vercel from client/ with the Vite production build.
+- Backend is served by Render from server/.
+- Configure Vercel's production VITE_API_URL as https://mailsure-api.onrender.com and rebuild after changing it.
+- Configure Render's CLIENT_URL as https://mailchecker-pi.vercel.app so browser requests from the production site pass CORS.
+- The API host needs outbound DNS access for MX and A/AAAA lookups. If DNS is blocked or inconclusive, valid addresses are reported as Unknown. Render free services may sleep while idle and have a cold-start delay.
+- Browser local storage may contain the last pasted list and results on that device. Clear the app's saved data or browser site data when appropriate; do not use this demo as a mailbox-verification service.
+
+## Security and privacy notes
+
+The API accepts only JSON and limits body size, request rates, batch size, and lookup concurrency. No email messages are sent. Address lists submitted to the live checker are sent to the MailSure API for DNS checks; the last input and result set are also stored in the browser's local storage for reload recovery. Do not paste a list unless you are permitted to process it.
