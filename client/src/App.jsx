@@ -172,7 +172,6 @@ function App() {
           <a href="#method">How It Works</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <span className="header-status"><span aria-hidden="true" /> DNS / MX LOOKUPS</span>
       </header>
 
       <main className="page-wrap">
@@ -180,11 +179,11 @@ function App() {
           <div className="hero-copy">
             <p className="eyebrow"><span className="eyebrow-rule" /> MAILSURE FIELD NOTE <span className="eyebrow-number">NO. 01</span></p>
             <h1 id="hero-title">Know your list.<br /><em>Before you send.</em></h1>
-            <p className="hero-deck">Validate email syntax. Check domain mail routing. Understand what your results can—and cannot—tell you.</p>
+            <p className="hero-deck">Check an address’s format and its domain’s mail route before you send. MailSure is clear about what those checks can—and cannot—tell you.</p>
             <ul className="feature-list" aria-label="What MailSure checks">
-              <li><span>01</span><strong>Fast &amp; simple</strong><small>Paste a list, get a clear read.</small></li>
-              <li><span>02</span><strong>Reliable checks</strong><small>Syntax and DNS / MX records.</small></li>
-              <li><span>03</span><strong>Transparent results</strong><small>No claims beyond the evidence.</small></li>
+              <li><span>01</span><strong>Quick to scan</strong><small>One clear result per address.</small></li>
+              <li><span>02</span><strong>Two useful checks</strong><small>Address format and mail routing.</small></li>
+              <li><span>03</span><strong>Honest by design</strong><small>A mail route is not mailbox proof.</small></li>
             </ul>
           </div>
           <figure className="hero-seal">
@@ -401,7 +400,33 @@ function App() {
 
       </main>
 
-      <footer className="post-footer" id="faq">
+      <section className="faq-section" id="faq" aria-labelledby="faq-title">
+        <div className="faq-heading">
+          <p className="section-index"><span className="eyebrow-rule" /> A FEW QUICK ANSWERS</p>
+          <h2 id="faq-title">Before you send.</h2>
+          <p>What these results mean, and where their limits are.</p>
+        </div>
+        <div className="faq-list">
+          <details>
+            <summary>What does MailSure check?</summary>
+            <p>It checks whether each address follows a common email format, then checks the domain’s mail-routing records. If no MX record is found, it also checks for an A or AAAA record.</p>
+          </details>
+          <details>
+            <summary>Does “Likely Deliverable” mean the mailbox exists?</summary>
+            <p>No. It means the address format is valid and the domain appears to have a mail route. MailSure does not verify an individual mailbox or guarantee inbox delivery.</p>
+          </details>
+          <details>
+            <summary>Why might a result be “Unknown”?</summary>
+            <p>DNS may not provide a reliable answer, or the domain may have a mail route while the mailbox itself remains unverified. That uncertainty is intentional.</p>
+          </details>
+          <details>
+            <summary>Are emails sent or stored?</summary>
+            <p>No messages are sent and no SMTP mailbox probing is performed. Addresses are sent to the MailSure API for checks; the latest input and results are also saved in this browser so they can be restored after a reload.</p>
+          </details>
+        </div>
+      </section>
+
+      <footer className="post-footer">
         <a className="footer-wordmark" href="#top"><ShieldCheck size={16} aria-hidden="true" /> MailSure<span>.</span></a>
         <p>DNS / MX checks indicate that a domain has mail-routing records. They do not confirm that an individual mailbox exists or guarantee inbox delivery.</p>
         <span className="footer-edition">THE NIGHT POST OFFICE <span>·</span> 01</span>
